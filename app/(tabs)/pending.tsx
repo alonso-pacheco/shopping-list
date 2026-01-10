@@ -1,7 +1,7 @@
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import ShoppingList from '@/src/components/list';
 import { ModalList } from '@/src/components/modal';
-import { ShoppingRepository } from '@/src/repository/repository';
+import { PendingRepository } from '@/src/repository/repository';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -12,17 +12,17 @@ import Toast from 'react-native-toast-message';
 export default function HomeScreen() {
   const [items, setItems] = useState<any[]>([]);
   const [visible, setVisible] = useState(false);
-  const repository = new ShoppingRepository();
+  const repository = new PendingRepository();
 
 
   //#region Data
   useFocusEffect(
     useCallback(() => {
-      handlerListShopping();
+      handlerListPending();
     }, [])
   );
 
-  const handlerListShopping = async () => {
+  const handlerListPending = async () => {
     const data = await repository.getAll();
     setItems(data);
   }
@@ -40,13 +40,13 @@ export default function HomeScreen() {
 
   const clearItems = async () => {
     await repository.clear();
-    handlerListShopping();
+    handlerListPending();
   }
 
   const checkItem = async (id:number, checked:boolean) => {
 
     await repository.check(id, checked);
-    handlerListShopping();
+    handlerListPending();
   }
 
   const saveItem = async (text: string) => {
@@ -58,7 +58,7 @@ export default function HomeScreen() {
       return;
     }
     await repository.save(text);
-    handlerListShopping();
+    handlerListPending();
   }
 
 
@@ -78,7 +78,7 @@ export default function HomeScreen() {
       </Modal>
 
       <View style={styles.container}>
-        <Text style={styles.title}>Compras</Text>
+        <Text style={styles.title}>Pendientes</Text>
         <ShoppingList items={items} onToggle={toggleItem} />
       </View>
 
@@ -94,7 +94,7 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   title: {
-    padding: 10,
+    margin: 10,
     textAlign: 'center',
     fontSize: 30,
   },
