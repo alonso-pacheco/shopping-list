@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { Theme, useTheme } from "@react-navigation/native";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+
 
 type Props = {
   visible: boolean;
@@ -10,12 +12,21 @@ type Props = {
 export const ModalList: React.FC<Props> = ({visible, saveItem, handleModal}) => {
 
     const [text, setText] = useState("");
+    const inputRef = useRef<TextInput>(null);
+    const theme = useTheme()
+    const styles = useMemo(() => createStyles(theme), [theme])
 
     //# region Handlers
     async function handleDoneEditing(){
       await saveItem(text);
       await setText("");
     }
+
+    useEffect(() => {
+      if(visible){
+        inputRef.current?.focus();
+      }
+    }, [visible]);
     //# endregion
 
     return (
@@ -30,7 +41,9 @@ export const ModalList: React.FC<Props> = ({visible, saveItem, handleModal}) => 
               padding: 16
               }}>
               <TextInput
+                  ref={inputRef}
                   placeholder="Ingresar descripción..."
+                  placeholderTextColor={theme.colors.text}
                   value={text}
                   onChangeText={setText}
                   autoFocus
@@ -56,7 +69,7 @@ export const ModalList: React.FC<Props> = ({visible, saveItem, handleModal}) => 
 }
 
 
-const styles = StyleSheet.create({
+const createStyles = (theme:Theme) => StyleSheet.create({
   overlay: {
     position: "absolute",
     top: 0,
@@ -73,12 +86,13 @@ const styles = StyleSheet.create({
     padding: 16,
     elevation: 5, // Android shadow
     justifyContent: "center",
-    alignItems: "center"
+    alignItems: "center",
   },
   title: {
     fontSize: 18,
     fontWeight: "600",
     marginBottom: 12,
+    color: theme.colors.text,
   },
   input: {
     borderWidth: 1,

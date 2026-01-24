@@ -1,20 +1,29 @@
-# Welcome to your Expo app 👋
-
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+# Welcome to Shopping List app 👋
 
 ## Get started
+This app allows you to create and manage shopping list
 
-1. Install dependencies
+### Create the project
+1. Documentation: [https://docs.expo.dev/more/create-expo/](https://docs.expo.dev/more/create-expo/)
+2. Create project: `npx create-expo-app@latest shopping-list`
+3. Start project: `npx expo start` or `npx expo start -c`
+4. Generate Android and iOS native folder: `npx expo prebuild --clean`
+5. Run android: `expo run:android`
+6. Run app: `npx expo start`
 
-   ```bash
-   npm install
-   ```
+### Generate APK
+1. Go to the `android` folder.
+2. Run the following command to generate APK: `gradlew assembleRelease`.
+3. Find the APK at: `android/app/build/outputs/apk/release`.
+4. Regenerate the Android folder after updating app.json `npx expo prebuild --clean`.
 
-2. Start the app
 
-   ```bash
-   npx expo start
-   ```
+# Assets
+## Images
+Icon: https://www.flaticon.es/icono-gratis/pedido_6632848?term=lista+de+compras&page=1&position=6&origin=search&related_id=6632848
+Form: 
+Size: 60
+Color: #EF8914
 
 In the output, you'll find options to open the app in a
 
@@ -48,3 +57,4 @@ Join our community of developers creating universal apps.
 
 - [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
 - [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+

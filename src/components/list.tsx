@@ -1,4 +1,5 @@
-import React from 'react';
+import { Theme, useTheme } from '@react-navigation/native';
+import React, { useMemo } from 'react';
 import {
   FlatList,
   Image,
@@ -12,10 +13,19 @@ import { ShoppingDTO } from '../database/models/shopping';
 
 type Props = {
   items: ShoppingDTO[];
+  imgName: string,
   onToggle: (id: number, checked:boolean) => void;
 };
 
-const ShoppingList: React.FC<Props> = ({ items, onToggle }) => {
+const ShoppingList: React.FC<Props> = ({ items, imgName, onToggle }) => {
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
+  const images = {
+    "empty": require("../assets/images/empty.png"),
+    "order": require("../assets/images/order.png"),
+  } as Record<string, any>;
+  const imageSource = images[imgName];
+
   const renderItem = ({ item }: { item: ShoppingDTO }) => (
     <Pressable
       style={styles.item}
@@ -50,7 +60,7 @@ const ShoppingList: React.FC<Props> = ({ items, onToggle }) => {
       <View style={styles.container}>
       <Image 
         style={styles.empty_img}
-        source={require("../assets/images/empty.png")} />
+        source={imageSource} />
       </View>
     )
     }
@@ -58,7 +68,7 @@ const ShoppingList: React.FC<Props> = ({ items, onToggle }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme:Theme) => StyleSheet.create({
   container: {
     // flex: 1,
     flexDirection: 'column',
@@ -66,6 +76,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     // alignSelf: 'center',
     height: '80%',
+    backgroundColor: theme.colors.background,
   },
   msgNoData: {
     alignItems: 'center',
@@ -75,6 +86,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 12,
+    margin: 3,
+    backgroundColor: theme.colors.card,
+    borderRadius: 8,
   },
   checkbox: {
     width: 24,
@@ -95,6 +109,7 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 16,
+    color: theme.colors.text,
   },
   textChecked: {
     textDecorationLine: 'line-through',

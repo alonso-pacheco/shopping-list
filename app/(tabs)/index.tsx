@@ -2,8 +2,9 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import ShoppingList from '@/src/components/list';
 import { ModalList } from '@/src/components/modal';
 import { ShoppingRepository } from '@/src/repository/repository';
+import { Theme, useTheme } from '@react-navigation/native';
 import { useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
@@ -13,6 +14,8 @@ export default function HomeScreen() {
   const [items, setItems] = useState<any[]>([]);
   const [visible, setVisible] = useState(false);
   const repository = new ShoppingRepository();
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme])
 
 
   //#region Data
@@ -39,6 +42,18 @@ export default function HomeScreen() {
   }
 
   const clearItems = async () => {
+    if(items.length <= 0){
+      Toast.show({
+        type: "info",
+        text1: "No hay registros a eliminar...",
+      })
+      return
+    } else if(items.filter(i => i.checked == true).length == 0){
+      Toast.show({
+        type: "info",
+        text1: "No hay registros seleccionados...",
+      })
+    }
     await repository.clear();
     handlerListShopping();
   }
@@ -79,7 +94,10 @@ export default function HomeScreen() {
 
       <View style={styles.container}>
         <Text style={styles.title}>Compras</Text>
-        <ShoppingList items={items} onToggle={toggleItem} />
+        <ShoppingList
+          items={items}
+          imgName="order"
+          onToggle={toggleItem} />
       </View>
 
       <TouchableOpacity style={[styles.floatingButton, styles.floatingButtonTrash]} onPress={() => clearItems()}>
@@ -92,31 +110,27 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) => StyleSheet.create({
   title: {
     padding: 10,
     textAlign: 'center',
     fontSize: 30,
+    color: theme.colors.text
   },
   container: {
     padding: 20,
     paddingTop: 35,
+    backgroundColor: theme.colors.background
   },
   titleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    color: theme.colors.text
   },
   stepContainer: {
     gap: 8,
     marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
   },
   floatingButton: {
     backgroundColor: "#1581BF",
