@@ -44,28 +44,26 @@ const ShoppingList: React.FC<Props> = ({ items, imgName, onToggle }) => {
     </Pressable>
   );
 
-  return (
-    <View>
-    { items.length > 0 ? 
+  return items.length > 0 ? 
     (
+      <View >
       <FlatList
         data={items}
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderItem}
         keyboardShouldPersistTaps="always"
+        contentContainerStyle={{paddingBottom: 120}}
+        removeClippedSubviews={false}
       />
+      </View>
     ) :
     (
-      // <Text style={styles.msgNoData}>Sin registros...</Text>
       <View style={styles.container}>
       <Image 
         style={styles.empty_img}
         source={imageSource} />
       </View>
     )
-    }
-    </View>
-  );
 };
 
 const createStyles = (theme:Theme) => StyleSheet.create({

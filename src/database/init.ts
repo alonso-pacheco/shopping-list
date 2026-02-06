@@ -1,9 +1,8 @@
-import { getDB } from "./db";
+import { SQLiteDatabase } from "expo-sqlite";
 
 
 
-export const initDatabase = async () => {
-    const db = await getDB();
+export const initDatabase = async (db: SQLiteDatabase) => {
     await db.execAsync(`
         CREATE TABLE IF NOT EXISTS shopping(
             id INTEGER PRIMARY KEY AUTOINCREMENT,

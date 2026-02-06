@@ -26,8 +26,6 @@ export class ShoppingRepository{
             const db = await getDB();
             await db.runAsync(`INSERT INTO ${TABLE_SHOPPING} (name, checked) VALUES (?, ?)`,
                 [name, 0])
-
-
         }catch(e){
             console.error("save shopping", e);
             throw e;

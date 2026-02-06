@@ -4,8 +4,8 @@ import { ModalList } from '@/src/components/modal';
 import { ShoppingRepository } from '@/src/repository/repository';
 import { Theme, useTheme } from '@react-navigation/native';
 import { useFocusEffect } from 'expo-router';
-import { useCallback, useMemo, useState } from 'react';
-import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { AppState, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 
@@ -19,11 +19,38 @@ export default function HomeScreen() {
 
 
   //#region Data
+  const appState = useRef(AppState.currentState);
+  const lastUpdate = useRef(0);
+
   useFocusEffect(
     useCallback(() => {
-      handlerListShopping();
+      safeUpdate();
     }, [])
   );
+
+  useEffect(() => {
+    const suscription = AppState.addEventListener('change', nextState => {
+      if( appState.current.match(/inactive|background/) && nextState=="active"){
+        safeUpdate();
+      }
+
+      appState.current = nextState;
+
+    })
+    return () => suscription.remove();
+  }, [])
+
+  const safeUpdate = useCallback(() => {
+    const now = Date.now();
+
+    // Evita llamadas múltiples en corto tiempo
+    if (now - lastUpdate.current < 1000) {
+      return;
+    }
+
+    lastUpdate.current = now;
+    handlerListShopping();
+  }, []);
 
   const handlerListShopping = async () => {
     const data = await repository.getAll();
@@ -65,7 +92,7 @@ export default function HomeScreen() {
   }
 
   const saveItem = async (text: string) => {
-    if(text == ""){
+    if(text == "" || !text.trim()){
       Toast.show({
         type: "error",
         text1: "El texto no puede estar vacío..."
@@ -81,16 +108,10 @@ export default function HomeScreen() {
   
   return (
     <SafeAreaProvider>
-      <Modal
+        <ModalList 
+          saveItem={saveItem}
           visible={visible}
-          transparent={true}
-          animationType="fade"
-          onRequestClose={() => {toggleModal(false)}}>
-          <ModalList 
-            saveItem={saveItem}
-            visible={visible}
-            handleModal={toggleModal}/>
-      </Modal>
+          handleModal={toggleModal}/>
 
       <View style={styles.container}>
         <Text style={styles.title}>Compras</Text>

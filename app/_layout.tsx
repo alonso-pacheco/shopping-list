@@ -4,15 +4,15 @@ import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { getDB } from '@/src/database/db';
 import { useEffect } from 'react';
 import Toast from 'react-native-toast-message';
-import { initDatabase } from '../src/database/init';
 
 
 export default function RootLayout() {
 
   useEffect(() => {
-    initDatabase();
+    getDB()
   }, []);
   
   const colorScheme = useColorScheme();
