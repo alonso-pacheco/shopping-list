@@ -1,13 +1,29 @@
 import { TABLE_PENDING, TABLE_SHOPPING } from "../constants/database";
+import { SortEnum } from "../constants/enumerates";
 import { getDB } from "../database/db";
 import { PendingDTO, ShoppingDTO } from "../database/models/shopping";
+import { getSortOption } from "../services/storage";
 
 export class ShoppingRepository{
 
-    async getAll() {
+    async getAll(order: string) {
         try{
+            if(order == ""){
+                let localOrder = await getSortOption();
+                order = localOrder != null ? localOrder : SortEnum.CREATED
+            }
+
             const db = await getDB();
-            const allRows = await db.getAllAsync<ShoppingDTO>(`SELECT * FROM ${TABLE_SHOPPING} ORDER BY id and checked;`);
+            let query = `SELECT * FROM ${TABLE_SHOPPING} `
+            query += `ORDER BY checked ASC, `;
+            if (order === SortEnum.ASC || order === SortEnum.DESC) {
+                query += `name ${order === SortEnum.ASC ? "ASC" : "DESC"}`;
+            }else if (order === SortEnum.CREATED){
+                query += `id`
+            }
+            
+            const allRows = await db.getAllAsync<ShoppingDTO>(query);
+            
             return allRows.map(row => {
                 return new ShoppingDTO({
                     id: row.id,
@@ -60,7 +76,7 @@ export class PendingRepository{
     async getAll() {
         try{
             const db = await getDB();
-            const allRows = await db.getAllAsync<PendingDTO>(`SELECT * FROM ${TABLE_PENDING} ORDER BY id and checked;`);
+            const allRows = await db.getAllAsync<PendingDTO>(`SELECT * FROM ${TABLE_PENDING} ORDER BY name and checked;`);
             return allRows.map(row => {
                 return new PendingDTO({
                     id: row.id,

@@ -21,7 +21,8 @@ const MAPPING = {
   'bag': 'shopping-bag',
   '10.calendar': 'pending-actions',
   'plus': 'add',
-  'trash': 'delete-sweep'
+  'trash': 'delete-sweep',
+  'wind': 'format-list-bulleted'
 } as IconMapping;
 
 /**

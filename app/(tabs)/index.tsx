@@ -1,7 +1,9 @@
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import ShoppingList from '@/src/components/list';
 import { ModalList } from '@/src/components/modal';
+import { ModalOrder } from '@/src/components/modalOrder';
 import { ShoppingRepository } from '@/src/repository/repository';
+import { saveSortOption } from '@/src/services/storage';
 import { Theme, useTheme } from '@react-navigation/native';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -13,6 +15,7 @@ import Toast from 'react-native-toast-message';
 export default function HomeScreen() {
   const [items, setItems] = useState<any[]>([]);
   const [visible, setVisible] = useState(false);
+  const [visibleOrder, setVisibleOrder] = useState(false);
   const repository = new ShoppingRepository();
   const theme = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme])
@@ -52,12 +55,12 @@ export default function HomeScreen() {
     handlerListShopping();
   }, []);
 
-  const handlerListShopping = async () => {
-    const data = await repository.getAll();
+  const handlerListShopping = async (order: string = "") => {
+    const data = await repository.getAll(order);
     setItems(data);
   }
 
-  const toggleItem = (id: number, checked: boolean) => {
+  const handlerItem = (id: number, checked: boolean) => {
     checkItem(id, checked);
   };
   //#endregion
@@ -66,6 +69,10 @@ export default function HomeScreen() {
   //#region Actions
   const toggleModal = (show: boolean) => {
     setVisible(show);
+  }
+
+  const toggleSortModal = (show: boolean) => {
+    setVisibleOrder(show)
   }
 
   const clearItems = async () => {
@@ -103,6 +110,10 @@ export default function HomeScreen() {
     handlerListShopping();
   }
 
+  const handlerSortOption = async (value: string) => {
+    saveSortOption(value);
+    handlerListShopping();
+  }
 
   //#endregion
   
@@ -113,12 +124,26 @@ export default function HomeScreen() {
           visible={visible}
           handleModal={toggleModal}/>
 
+        <ModalOrder 
+          saveSortOption={handlerSortOption}
+          visible={visibleOrder}
+          handleModal={toggleSortModal}/>
+
       <View style={styles.container}>
-        <Text style={styles.title}>Compras</Text>
+        <View style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}>
+          <Text style={styles.title}>Compras</Text>
+          <TouchableOpacity style={styles.title} onPress={() => toggleSortModal(true)}>
+            <IconSymbol name="wind" size={22} color={theme.colors.text}/>
+          </TouchableOpacity>
+        </View>
         <ShoppingList
           items={items}
           imgName="order"
-          onToggle={toggleItem} />
+          onToggle={handlerItem} />
       </View>
 
       <TouchableOpacity style={[styles.floatingButton, styles.floatingButtonTrash]} onPress={() => clearItems()}>
