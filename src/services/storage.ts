@@ -9,7 +9,8 @@ export async function saveSortOption(value: string){
 }
 
 export async function getSortOption(){
-    return AsyncStorage.getItem(
+    let local = await AsyncStorage.getItem(
         STORAGE_KEY.SHOPPING_SORT
     );
+    return local != null ? local : "";
 }

@@ -1,18 +1,22 @@
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import ShoppingList from '@/src/components/list';
 import { ModalList } from '@/src/components/modal';
+import { ModalOrder } from '@/src/components/modalOrder';
 import { PendingRepository } from '@/src/repository/repository';
+import { saveSortOption } from '@/src/services/storage';
 import { Theme, useTheme } from '@react-navigation/native';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
-import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
+
 
 
 export default function HomeScreen() {
   const [items, setItems] = useState<any[]>([]);
   const [visible, setVisible] = useState(false);
+  const [visibleOrder, setVisibleOrder] = useState(false);
   const repository = new PendingRepository();
   const theme = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme])
@@ -25,8 +29,8 @@ export default function HomeScreen() {
     }, [])
   );
 
-  const handlerListPending = async () => {
-    const data = await repository.getAll();
+  const handlerListPending = async (order: string = "") => {
+    const data = await repository.getAll(order);
     setItems(data);
   }
 
@@ -39,6 +43,10 @@ export default function HomeScreen() {
   //#region Actions
   const toggleModal = (show: boolean) => {
     setVisible(show);
+  }
+
+  const toggleSortModal = (show: boolean) => {
+    setVisibleOrder(show)
   }
 
   const clearItems = async () => {
@@ -71,24 +79,38 @@ export default function HomeScreen() {
     handlerListPending();
   }
 
+    const handlerSortOption = async (value: string) => {
+      saveSortOption(value);
+      handlerListPending();
+    }
+
 
   //#endregion
   
   return (
     <SafeAreaProvider>
-      <Modal
-          visible={visible}
-          transparent={true}
-          animationType="fade"
-          onRequestClose={() => {toggleModal(false)}}>
-            <ModalList
-              saveItem={saveItem}
-              visible={visible}
-              handleModal={toggleModal}/>
-      </Modal>
+
+      <ModalList
+        saveItem={saveItem}
+        visible={visible}
+        handleModal={toggleModal}/>
+
+      <ModalOrder 
+        saveSortOption={handlerSortOption}
+        visible={visibleOrder}
+        handleModal={toggleSortModal}/>
 
       <View style={styles.container}>
-        <Text style={styles.title}>Pendientes</Text>
+        <View style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}>
+          <Text style={styles.title}>Pendientes</Text>
+          <TouchableOpacity style={styles.title} onPress={() => toggleSortModal(true)}>
+            <IconSymbol name="wind" size={22} color={theme.colors.text}/>
+          </TouchableOpacity>
+        </View>
         <ShoppingList
           items={items}
           imgName="empty"
