@@ -5,11 +5,14 @@ import { KeyboardAvoidingView, Modal, Pressable, StyleSheet, Text, TextInput, Vi
 
 type Props = {
   visible: boolean;
-  saveItem: (name: string) => void;
+  updateData?: {id: number, text: string} | null;
+  saveItem: (name: string, id?: number) => void;
   handleModal: (show: boolean) => void;
 };
 
-export const ModalList: React.FC<Props> = ({visible, saveItem, handleModal}) => {
+export const ModalList: React.FC<Props> = ({
+  visible, updateData, saveItem, handleModal
+}) => {
 
   const [text, setText] = useState("");
   const inputRef = useRef<TextInput>(null);
@@ -18,14 +21,24 @@ export const ModalList: React.FC<Props> = ({visible, saveItem, handleModal}) => 
 
   //# region Handlers
   async function handleDoneEditing(){
-    await saveItem(text);
-    await setText("");
+    if(updateData && updateData.id){
+      await saveItem(text, updateData.id);
 
-    requestAnimationFrame(() => {
-      inputRef.current?.focus();
-    })
+    } else{
+      await saveItem(text);
+      requestAnimationFrame(() => {
+        inputRef.current?.focus();
+      })
+    }
+    await setText("");
   }
   //# endregion
+  if(updateData && updateData.text && text == ""){
+    setText(updateData.text);
+  }
+  if(!visible && text != ""){
+    setText("");
+  }
 
   return (
     <Modal

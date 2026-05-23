@@ -15,9 +15,10 @@ type Props = {
   items: ShoppingDTO[];
   imgName: string,
   onToggle: (id: number, checked:boolean) => void;
+  onToggleUpdate: (id: number, text:string) => void;
 };
 
-const ShoppingList: React.FC<Props> = ({ items, imgName, onToggle }) => {
+const ShoppingList: React.FC<Props> = ({ items, imgName, onToggle, onToggleUpdate }) => {
   const theme = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const images = {
@@ -30,6 +31,7 @@ const ShoppingList: React.FC<Props> = ({ items, imgName, onToggle }) => {
     <Pressable
       style={styles.item}
       onPress={() => onToggle(item.id, !item.checked)}
+      onLongPress={() => onToggleUpdate(item.id, item.name ?? "")}
     >
       <View style={[styles.checkbox, item.checked && styles.checked]}>
         <Text style={styles.check}>{ item.checked ? "✓" : ""}</Text>

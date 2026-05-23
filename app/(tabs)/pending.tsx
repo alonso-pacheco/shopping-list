@@ -6,8 +6,8 @@ import { PendingRepository } from '@/src/repository/repository';
 import { saveSortOption } from '@/src/services/storage';
 import { Theme, useTheme } from '@react-navigation/native';
 import { useFocusEffect } from 'expo-router';
-import { useCallback, useMemo, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { AppState, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 
@@ -17,17 +17,44 @@ export default function HomeScreen() {
   const [items, setItems] = useState<any[]>([]);
   const [visible, setVisible] = useState(false);
   const [visibleOrder, setVisibleOrder] = useState(false);
+  const [updateItem, setUpdateItem] = useState<{id: number, text: string} | null>(null);
   const repository = new PendingRepository();
   const theme = useTheme();
-  const styles = useMemo(() => createStyles(theme), [theme])
+  const styles = useMemo(() => createStyles(theme), [theme]);
 
 
   //#region Data
+  const appState = useRef(AppState.currentState);
+  const lastUpdate = useRef(0);
   useFocusEffect(
     useCallback(() => {
-      handlerListPending();
+      safeUpdate();
     }, [])
   );
+
+  useEffect(() => {
+    const suscription = AppState.addEventListener('change', nextState => {
+      if(appState.current.match(/inactive|background/) && nextState=="active"){
+        safeUpdate();
+      }
+
+      appState.current = nextState;
+
+    })
+    return () => suscription.remove();
+  }, [])
+
+  const safeUpdate = useCallback(() => {
+    const now = Date.now();
+
+    // Evita llamadas múltiples en corto tiempo
+    if (now - lastUpdate.current < 1000) {
+      return;
+    }
+
+    lastUpdate.current = now;
+    handlerListPending();
+  }, []);
 
   const handlerListPending = async (order: string = "") => {
     const data = await repository.getAll(order);
@@ -36,13 +63,21 @@ export default function HomeScreen() {
 
   const toggleItem = (id: number, checked: boolean) => {
     checkItem(id, checked);
+    setUpdateItem(null);
   };
+
   //#endregion
 
 
   //#region Actions
+  const toggleUpdate = (id: number, text: string) => {
+    setVisible(true);
+    setUpdateItem({id, text});
+  }
+
   const toggleModal = (show: boolean) => {
     setVisible(show);
+    setUpdateItem(null);
   }
 
   const toggleSortModal = (show: boolean) => {
@@ -67,7 +102,7 @@ export default function HomeScreen() {
     handlerListPending();
   }
 
-  const saveItem = async (text: string) => {
+  const saveItem = async (text: string, id: number = 0) => {
     if(text == ""){
       Toast.show({
         type: "error",
@@ -75,13 +110,19 @@ export default function HomeScreen() {
       })
       return;
     }
-    await repository.save(text);
+    if(id == 0){
+      await repository.save(text);
+    } else{
+      await repository.update(text, id);
+      setVisible(false);
+      setUpdateItem(null);
+    }
     handlerListPending();
   }
 
-    const handlerSortOption = async (value: string) => {
-      saveSortOption(value);
-      handlerListPending();
+  const handlerSortOption = async (value: string) => {
+    saveSortOption(value);
+    handlerListPending();
     }
 
 
@@ -93,7 +134,9 @@ export default function HomeScreen() {
       <ModalList
         saveItem={saveItem}
         visible={visible}
-        handleModal={toggleModal}/>
+        handleModal={toggleModal}
+        updateData={updateItem}
+        />
 
       <ModalOrder 
         saveSortOption={handlerSortOption}
@@ -115,6 +158,7 @@ export default function HomeScreen() {
           items={items}
           imgName="empty"
           onToggle={toggleItem}
+          onToggleUpdate={toggleUpdate}
           />
       </View>
 

@@ -16,9 +16,10 @@ export default function HomeScreen() {
   const [items, setItems] = useState<any[]>([]);
   const [visible, setVisible] = useState(false);
   const [visibleOrder, setVisibleOrder] = useState(false);
+  const [updateItem, setUpdateItem] = useState<{id: number, text: string} | null>(null);
   const repository = new ShoppingRepository();
   const theme = useTheme();
-  const styles = useMemo(() => createStyles(theme), [theme])
+  const styles = useMemo(() => createStyles(theme), [theme]);
 
 
   //#region Data
@@ -60,15 +61,23 @@ export default function HomeScreen() {
     setItems(data);
   }
 
-  const handlerItem = (id: number, checked: boolean) => {
+  const toggleItem = (id: number, checked: boolean) => {
     checkItem(id, checked);
+    setUpdateItem(null);
   };
+
   //#endregion
-
-
+  
+  
   //#region Actions
+  const toggleUpdate = (id: number, text: string) => {
+    setVisible(true);
+    setUpdateItem({id, text});
+  }
+
   const toggleModal = (show: boolean) => {
     setVisible(show);
+    setUpdateItem(null);
   }
 
   const toggleSortModal = (show: boolean) => {
@@ -98,7 +107,7 @@ export default function HomeScreen() {
     handlerListShopping();
   }
 
-  const saveItem = async (text: string) => {
+  const saveItem = async (text: string, id: number = 0) => {
     if(text == "" || !text.trim()){
       Toast.show({
         type: "error",
@@ -106,7 +115,13 @@ export default function HomeScreen() {
       })
       return;
     }
-    await repository.save(text);
+    if(id == 0){
+      await repository.save(text);
+    } else{
+      await repository.update(text, id);
+      setVisible(false);
+      setUpdateItem(null);
+    }
     handlerListShopping();
   }
 
@@ -120,9 +135,10 @@ export default function HomeScreen() {
   return (
     <SafeAreaProvider>
         <ModalList 
-          saveItem={saveItem}
           visible={visible}
-          handleModal={toggleModal}/>
+          saveItem={saveItem}
+          handleModal={toggleModal}
+          updateData={updateItem} />
 
         <ModalOrder 
           saveSortOption={handlerSortOption}
@@ -143,7 +159,8 @@ export default function HomeScreen() {
         <ShoppingList
           items={items}
           imgName="order"
-          onToggle={handlerItem} />
+          onToggle={toggleItem}
+          onToggleUpdate={toggleUpdate} />
       </View>
 
       <TouchableOpacity style={[styles.floatingButton, styles.floatingButtonTrash]} onPress={() => clearItems()}>

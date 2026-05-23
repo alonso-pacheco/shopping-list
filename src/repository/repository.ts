@@ -37,6 +37,16 @@ export class ShoppingRepository{
         }
     }
 
+    async update(name: string, id: number){
+        try{
+            const db = await getDB();
+            await db.runAsync(`UPDATE ${TABLE_SHOPPING} SET name=? WHERE id=?`, [name, id]);
+            
+        }catch(e){
+            throw e;
+        }
+    }
+
     async check(id:number, is_checked: boolean){
         try{
             let checked = is_checked ? "1" : "0"; 
@@ -67,7 +77,6 @@ export class PendingRepository{
             const db = await getDB();
             let query = `SELECT * FROM ${TABLE_PENDING} ORDER BY checked ASC, `;
             query += await choiceSortOptionToQuery(order);
-            console.log(">>>>> query pending", query);
             const allRows = await db.getAllAsync<PendingDTO>(query);
             return allRows.map(row => {
                 return new PendingDTO({
@@ -91,6 +100,16 @@ export class PendingRepository{
 
         }catch(e){
             // console.error("save pending", e);
+            throw e;
+        }
+    }
+
+    async update(name: string, id: number){
+        try{
+            const db = await getDB();
+            await db.runAsync(`UPDATE ${TABLE_PENDING} SET name=? WHERE id=?`, [name, id]);
+            
+        }catch(e){
             throw e;
         }
     }
